@@ -4,12 +4,13 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>RevClear Demo</title>
+  <link rel="stylesheet" href="styles.css"/>
   <meta name="robots" content="noindex,nofollow">
   <style>
-    .center{display:flex;align-items:center;justify-content:center;height:100vh}
-    .dot{width:10px;height:10px;margin:4px;border-radius:50%;background:#60a5fa;animation:b 1.1s infinite alternate}
-    .dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
-    @keyframes b{to{transform:translateY(-6px);opacity:.6}}
+    .center { display:flex; align-items:center; justify-content:center; height:100vh; }
+    .dot { width:10px; height:10px; margin:4px; border-radius:50%; background:#60a5fa; animation:b 1.1s infinite alternate; }
+    .dot:nth-child(2){ animation-delay:.15s } .dot:nth-child(3){ animation-delay:.3s }
+    @keyframes b { to { transform: translateY(-6px); opacity:.6 } }
   </style>
 </head>
 <body>
@@ -17,8 +18,17 @@
     <div class="dot"></div><div class="dot"></div><div class="dot"></div>
   </div>
   <script>
-    // Always start at Signup
-    location.replace('signup.html');
+    (function () {
+      try {
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const session = JSON.parse(localStorage.getItem('session') || 'null');
+        if (!users || users.length === 0) { location.replace('signup.html'); return; }
+        if (!session) { location.replace('login.html'); return; }
+        location.replace('patient.html');
+      } catch {
+        location.replace('signup.html');
+      }
+    })();
   </script>
 </body>
 </html>
