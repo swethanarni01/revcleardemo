@@ -1,45 +1,45 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Clinician Login</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css"/>
+  <meta name="robots" content="noindex,nofollow">
 </head>
 <body>
   <div class="container">
     <div class="card">
       <h1>Clinician Login</h1>
-      <div class="mt success hidden" id="flash"></div>
+
       <form id="loginForm" class="mt grid">
         <div class="field">
           <label>Email</label>
-          <input id="email" type="email" placeholder="jane@example.com" required />
+          <input id="email" type="email" placeholder="jane@example.com" required/>
           <div class="help" id="emailHelp"></div>
         </div>
         <div class="field">
           <label>Password</label>
-          <input id="password" type="password" placeholder="********" required minlength="8" />
+          <input id="password" type="password" placeholder="********" required minlength="8"/>
           <div class="help" id="passwordHelp"></div>
         </div>
+
         <div class="row mt">
           <button class="btn" type="submit">Login</button>
-          <a class="btn btn-outline" href="index.html">Back</a>
         </div>
       </form>
     </div>
   </div>
-  <script>
-    const params = new URLSearchParams(location.search);
-    const msg = params.get('msg');
-    if (msg) {
-      const el = document.getElementById('flash');
-      el.textContent = msg;
-      el.classList.remove('hidden');
-    }
 
-    const form = document.getElementById('loginForm');
-    form.addEventListener('submit', (e) => {
+  <script>
+    // Guard: if no clinician exists, send to signup; if session exists, go to patient
+    (function(){
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      if (!users || users.length === 0) { location.replace('signup.html'); return; }
+      const session = JSON.parse(localStorage.getItem('session') || 'null');
+      if (session) { location.replace('patient.html'); }
+    })();
+
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
       e.preventDefault();
       const email = document.getElementById('email').value.trim().toLowerCase();
       const password = document.getElementById('password').value;
@@ -52,7 +52,7 @@
       if (!user) { passwordHelp.textContent = 'Invalid email or password'; return; }
 
       localStorage.setItem('session', JSON.stringify({ email, name: user.name, loggedInAt: new Date().toISOString() }));
-      location.href = 'patient.html';
+      location.replace('patient.html');
     });
   </script>
 </body>
