@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>RevClear Demo</title>
   <link rel="stylesheet" href="styles.css" />
+  <!-- Optional: keep it private from search engines -->
+  <meta name="robots" content="noindex,nofollow">
 </head>
 <body>
   <div class="container">
@@ -16,8 +18,7 @@
         <a class="btn" href="signup.html">Clinician Signup</a>
         <a class="btn btn-outline" id="loginBtn" href="login.html">Login</a>
         <a class="btn btn-outline" href="patient.html">Patient Registration</a>
-        <!-- If you still want the full viewer page, keep this link.
-             Or delete this line to hide it completely. -->
+        <!-- Data Viewer link removed on purpose -->
         <button class="btn btn-danger" id="logoutBtn" style="display:none">Logout</button>
       </div>
 
@@ -26,7 +27,7 @@
   </div>
 
   <script>
-    // show success/info banner from ?msg=...
+    // Show banner from ?msg=...
     const params = new URLSearchParams(location.search);
     const msg = params.get('msg');
     if (msg) {
@@ -35,7 +36,7 @@
       el.classList.remove('hidden');
     }
 
-    // toggle Login/Logout based on session
+    // Toggle Login/Logout based on session
     const session = JSON.parse(localStorage.getItem('session') || 'null');
     const logoutBtn = document.getElementById('logoutBtn');
     const loginBtn = document.getElementById('loginBtn');
@@ -50,4 +51,3 @@
   </script>
 </body>
 </html>
-
