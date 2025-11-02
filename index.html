@@ -3,43 +3,31 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Demo – Clinician & Patient Flow</title>
+  <title>RevClear Demo</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="container">
     <div class="hero">
       <h1>RevClear <span class="grad">Demo</span></h1>
-      <p>Flow: <strong>Clinician Signup → Login → Patient Registration</strong></p>
-      <div class="nav mt">
+      <p><strong>Flow:</strong> Clinician Signup → Login → Patient Registration</p>
+
+      <div class="nav mt" id="nav">
         <a class="btn" href="signup.html">Clinician Signup</a>
-        <a class="btn btn-outline" href="login.html">Login</a>
+        <a class="btn btn-outline" id="loginBtn" href="login.html">Login</a>
         <a class="btn btn-outline" href="patient.html">Patient Registration</a>
+        <!-- If you still want the full viewer page, keep this link.
+             Or delete this line to hide it completely. -->
         <a class="btn btn-outline" href="manage.html">Open Full Data Viewer</a>
+        <button class="btn btn-danger" id="logoutBtn" style="display:none">Logout</button>
       </div>
+
       <div class="mt success hidden" id="flash"></div>
     </div>
-
-    <div class="row mt-lg">
-      <div class="card" style="flex:1 1 380px">
-        <h2>Clinicians (saved locally)</h2>
-        <table id="usersTable"><thead><tr><th>Name</th><th>Email</th><th class="right">Created</th></tr></thead><tbody></tbody></table>
-        <div class="row mt">
-          <button class="btn" id="refreshUsers">Refresh</button>
-          <button class="btn btn-outline" id="exportUsers">Download users.json</button>
-        </div>
-      </div>
-      <div class="card" style="flex:1 1 380px">
-        <h2>Patients (saved locally)</h2>
-        <table id="patientsTable"><thead><tr><th>Name</th><th>Email</th><th>DOB</th><th class="right">Created</th></tr></thead><tbody></tbody></table>
-        <div class="row mt">
-          <button class="btn" id="refreshPatients">Refresh</button>
-          <button class="btn btn-outline" id="exportPatients">Download patients.json</button>
-        </div>
-      </div>
-    </div>
   </div>
+
   <script>
+    // show success/info banner from ?msg=...
     const params = new URLSearchParams(location.search);
     const msg = params.get('msg');
     if (msg) {
@@ -48,26 +36,19 @@
       el.classList.remove('hidden');
     }
 
-    function fmt(d){ try { return new Date(d).toLocaleString(); } catch { return d; } }
-    function renderTables(){
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-      const patients = JSON.parse(localStorage.getItem('patients') || '[]');
-      document.querySelector('#usersTable tbody').innerHTML = users.map(u => \`<tr><td>\${u.name||""}</td><td>\${u.email||""}</td><td class="right">\${fmt(u.createdAt)}</td></tr>\`).join('');
-      document.querySelector('#patientsTable tbody').innerHTML = patients.map(p => \`<tr><td>\${p.name||""}</td><td>\${p.email||""}</td><td>\${p.dob||""}</td><td class="right">\${fmt(p.createdAt)}</td></tr>\`).join('');
+    // toggle Login/Logout based on session
+    const session = JSON.parse(localStorage.getItem('session') || 'null');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const loginBtn = document.getElementById('loginBtn');
+    if (session) {
+      logoutBtn.style.display = 'inline-block';
+      loginBtn.style.display = 'none';
     }
-    renderTables();
-
-    function download(filename, text){
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
-      a.download = filename; a.click();
-      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-    }
-
-    document.getElementById('exportUsers').onclick = () => download('users.json', localStorage.getItem('users') || '[]');
-    document.getElementById('exportPatients').onclick = () => download('patients.json', localStorage.getItem('patients') || '[]');
-    document.getElementById('refreshUsers').onclick = renderTables;
-    document.getElementById('refreshPatients').onclick = renderTables;
+    logoutBtn?.addEventListener('click', () => {
+      localStorage.removeItem('session');
+      location.href = 'index.html?msg=' + encodeURIComponent('Logged out.');
+    });
   </script>
 </body>
 </html>
+
