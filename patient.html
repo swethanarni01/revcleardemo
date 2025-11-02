@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Patient Registration</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>Patient Registration</h1>
+      <p>Enter patient details. You can <strong>type</strong> the date or use the <strong>calendar button</strong>.</p>
+      <form id="patientForm" class="mt grid">
+        <div class="field">
+          <label>Full Name</label>
+          <input id="pname" placeholder="John Smith" required minlength="2" />
+          <div class="help" id="pnameHelp"></div>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input id="pemail" type="email" placeholder="john@example.com" required />
+          <div class="help" id="pemailHelp"></div>
+        </div>
+        <div class="field">
+          <label>Date of Birth</label>
+          <div class="date-wrap">
+            <input id="pdob" type="date" placeholder="YYYY-MM-DD" pattern="\d{4}-\d{2}-\d{2}" />
+            <button type="button" class="calendar-btn" id="openCal">📅</button>
+          </div>
+          <div class="date-help" id="pdobHelp">Format: YYYY-MM-DD (or pick from calendar)</div>
+        </div>
+        <div class="row mt">
+          <button class="btn" type="submit">Submit</button>
+          <a class="btn btn-outline" href="index.html">Back</a>
+        </div>
+      </form>
+      <div class="mt success hidden" id="done">Patient registered.</div>
+    </div>
+  </div>
+  <script>
+    const session = JSON.parse(localStorage.getItem('session') || 'null');
+    if (!session) {
+      location.href = 'login.html?msg=' + encodeURIComponent('Please login to register a patient.');
+    }
+
+    // calendar button logic with graceful fallback
+    const dob = document.getElementById('pdob');
+    const calBtn = document.getElementById('openCal');
+    calBtn.addEventListener('click', () => {
+      if (dob.showPicker) { dob.showPicker(); } else { dob.focus(); }
+    });
+
+    const form = document.getElementById('patientForm');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('pname').value.trim();
+      const email = document.getElementById('pemail').value.trim().toLowerCase();
+      const pdob = dob.value.trim();
+      const pnameHelp = document.getElementById('pnameHelp');
+      const pemailHelp = document.getElementById('pemailHelp');
+      const pdobHelp = document.getElementById('pdobHelp');
+      pnameHelp.textContent = pemailHelp.textContent = ''; pdobHelp.textContent = 'Format: YYYY-MM-DD (or pick from calendar)';
+
+      let ok = true;
+      if (name.length < 2) { pnameHelp.textContent = 'Enter patient name'; ok = false; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { pemailHelp.textContent = 'Enter a valid email'; ok = false; }
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(pdob)) { pdobHelp.textContent = 'Enter a valid date as YYYY-MM-DD or use the calendar'; ok = false; }
+      if (!ok) return;
+
+      const patients = JSON.parse(localStorage.getItem('patients') || '[]');
+      patients.push({ name, email, dob: pdob, createdAt: new Date().toISOString(), by: session.email });
+      localStorage.setItem('patients', JSON.stringify(patients));
+
+      const done = document.getElementById('done');
+      done.classList.remove('hidden');
+      setTimeout(() => { location.href = 'index.html?msg=' + encodeURIComponent('Patient registered.'); }, 900);
+    });
+  </script>
+</body>
+</html>

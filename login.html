@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Clinician Login</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>Clinician Login</h1>
+      <div class="mt success hidden" id="flash"></div>
+      <form id="loginForm" class="mt grid">
+        <div class="field">
+          <label>Email</label>
+          <input id="email" type="email" placeholder="jane@example.com" required />
+          <div class="help" id="emailHelp"></div>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input id="password" type="password" placeholder="********" required minlength="8" />
+          <div class="help" id="passwordHelp"></div>
+        </div>
+        <div class="row mt">
+          <button class="btn" type="submit">Login</button>
+          <a class="btn btn-outline" href="index.html">Back</a>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const msg = params.get('msg');
+    if (msg) {
+      const el = document.getElementById('flash');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    const form = document.getElementById('loginForm');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      const password = document.getElementById('password').value;
+      const emailHelp = document.getElementById('emailHelp');
+      const passwordHelp = document.getElementById('passwordHelp');
+      emailHelp.textContent = passwordHelp.textContent = '';
+
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const user = users.find(u => u.email === email && u.password === password);
+      if (!user) { passwordHelp.textContent = 'Invalid email or password'; return; }
+
+      localStorage.setItem('session', JSON.stringify({ email, name: user.name, loggedInAt: new Date().toISOString() }));
+      location.href = 'patient.html';
+    });
+  </script>
+</body>
+</html>

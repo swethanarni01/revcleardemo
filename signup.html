@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Clinician Signup</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>Clinician Signup</h1>
+      <p>Create your clinician account.</p>
+      <form id="signupForm" class="mt grid">
+        <div class="field">
+          <label>Full Name</label>
+          <input id="name" placeholder="Dr. Jane Doe" required minlength="2" />
+          <div class="help" id="nameHelp"></div>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input id="email" type="email" placeholder="jane@example.com" required />
+          <div class="help" id="emailHelp"></div>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input id="password" type="password" placeholder="********" required minlength="8" />
+          <div class="help" id="passwordHelp"></div>
+        </div>
+        <div class="row mt">
+          <button class="btn" type="submit">Create account</button>
+          <a class="btn btn-outline" href="index.html">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script>
+    const form = document.getElementById('signupForm');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      const password = document.getElementById('password').value;
+
+      let ok = true;
+      const nameHelp = document.getElementById('nameHelp');
+      const emailHelp = document.getElementById('emailHelp');
+      const passwordHelp = document.getElementById('passwordHelp');
+      nameHelp.textContent = emailHelp.textContent = passwordHelp.textContent = '';
+
+      if (name.length < 2) { nameHelp.textContent = 'Enter your name'; ok = false; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { emailHelp.textContent = 'Enter a valid email'; ok = false; }
+      if (password.length < 8) { passwordHelp.textContent = 'Use at least 8 characters'; ok = false; }
+      if (!ok) return;
+
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      if (users.find(u => u.email === email)) {
+        emailHelp.textContent = 'Email already exists';
+        return;
+      }
+      users.push({ name, email, password, createdAt: new Date().toISOString() });
+      localStorage.setItem('users', JSON.stringify(users));
+      location.href = 'login.html?msg=' + encodeURIComponent('Signup successful. Please log in.');
+    });
+  </script>
+</body>
+</html>

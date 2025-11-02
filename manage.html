@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Data Viewer</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>Data Viewer</h1>
+      <p>Inspect and export demo data stored in <strong>localStorage</strong>.</p>
+
+      <div class="mt">
+        <h2>Clinicians</h2>
+        <table id="usersTable"><thead><tr><th>Name</th><th>Email</th><th>Created</th></tr></thead><tbody></tbody></table>
+        <div class="row mt">
+          <button class="btn" id="exportUsers">Download users.json</button>
+        </div>
+      </div>
+
+      <div class="mt-lg">
+        <h2>Patients</h2>
+        <table id="patientsTable"><thead><tr><th>Name</th><th>Email</th><th>DOB</th><th>By</th><th>Created</th></tr></thead><tbody></tbody></table>
+        <div class="row mt">
+          <button class="btn" id="exportPatients">Download patients.json</button>
+        </div>
+      </div>
+
+      <div class="mt-lg">
+        <div class="row">
+          <a class="btn btn-outline" href="index.html">Back Home</a>
+          <button class="btn btn-danger" id="clearAll">Clear demo data</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function download(filename, text) {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+      a.download = filename; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    }
+
+    function fmt(d){ try { return new Date(d).toLocaleString(); } catch { return d; } }
+
+    function render() {
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const patients = JSON.parse(localStorage.getItem('patients') || '[]');
+      const uBody = document.querySelector('#usersTable tbody');
+      const pBody = document.querySelector('#patientsTable tbody');
+      uBody.innerHTML = users.map(u => \`<tr><td>\${u.name||""}</td><td>\${u.email||""}</td><td>\${fmt(u.createdAt)}</td></tr>\`).join('');
+      pBody.innerHTML = patients.map(p => \`<tr><td>\${p.name||""}</td><td>\${p.email||""}</td><td>\${p.dob||""}</td><td>\${p.by||""}</td><td>\${fmt(p.createdAt)}</td></tr>\`).join('');
+    }
+
+    render();
+
+    document.getElementById('exportUsers').onclick = () => {
+      const users = localStorage.getItem('users') || '[]';
+      download('users.json', users);
+    };
+    document.getElementById('exportPatients').onclick = () => {
+      const patients = localStorage.getItem('patients') || '[]';
+      download('patients.json', patients);
+    };
+    document.getElementById('clearAll').onclick = () => {
+      if (confirm('Clear all demo data?')) {
+        localStorage.removeItem('users');
+        localStorage.removeItem('patients');
+        localStorage.removeItem('session');
+        render();
+        alert('Demo data cleared.');
+      }
+    };
+  </script>
+</body>
+</html>
