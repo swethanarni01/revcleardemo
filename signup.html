@@ -6,8 +6,8 @@
   <link rel="stylesheet" href="styles.css"/>
   <meta name="robots" content="noindex,nofollow">
   <style>
-    .muted { color:#94a3b8; font-size:14px; margin-top:10px; }
-    .muted a { color:#22d3ee; text-decoration:none; font-weight:700; }
+    .muted{color:#94a3b8;font-size:14px;margin-top:10px}
+    .muted a{color:#22d3ee;text-decoration:none;font-weight:700}
   </style>
 </head>
 <body>
@@ -38,18 +38,13 @@
         </div>
       </form>
 
-      <!-- New: sign-in shortcut -->
-      <p class="muted">Already registered? <a href="login.html">Sign in</a></p>
+      <!-- Small login link -->
+      <p class="muted">Already registered? <a href="login.html">Login</a></p>
     </div>
   </div>
 
   <script>
-    // If a clinician already exists, skip signup (locked flow)
-    (function() {
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-      if (users.length > 0) location.replace('login.html');
-    })();
-
+    // NOTE: No guard here — we do NOT auto-redirect to login even if a user exists.
     document.getElementById('signupForm').addEventListener('submit', (e) => {
       e.preventDefault();
       const name = document.getElementById('name').value.trim();
