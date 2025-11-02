@@ -1,81 +1,143 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Patient Registration</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css"/>
+  <meta name="robots" content="noindex,nofollow">
 </head>
 <body>
   <div class="container">
     <div class="card">
       <h1>Patient Registration</h1>
       <p>Enter patient details. You can <strong>type</strong> the date or use the <strong>calendar button</strong>.</p>
+
       <form id="patientForm" class="mt grid">
         <div class="field">
           <label>Full Name</label>
-          <input id="pname" placeholder="John Smith" required minlength="2" />
+          <input id="pname" placeholder="John Smith" required minlength="2"/>
           <div class="help" id="pnameHelp"></div>
         </div>
+
         <div class="field">
           <label>Email</label>
-          <input id="pemail" type="email" placeholder="john@example.com" required />
+          <input id="pemail" type="email" placeholder="john@example.com" required/>
           <div class="help" id="pemailHelp"></div>
         </div>
+
         <div class="field">
           <label>Date of Birth</label>
           <div class="date-wrap">
-            <input id="pdob" type="date" placeholder="YYYY-MM-DD" pattern="\d{4}-\d{2}-\d{2}" />
+            <input id="pdob" type="date" placeholder="YYYY-MM-DD" pattern="\\d{4}-\\d{2}-\\d{2}"/>
             <button type="button" class="calendar-btn" id="openCal">📅</button>
           </div>
           <div class="date-help" id="pdobHelp">Format: YYYY-MM-DD (or pick from calendar)</div>
         </div>
+
         <div class="row mt">
           <button class="btn" type="submit">Submit</button>
           <a class="btn btn-outline" href="index.html">Back</a>
+          <button type="button" class="btn btn-danger" id="logoutBtn">Logout</button>
         </div>
       </form>
+
       <div class="mt success hidden" id="done">Patient registered.</div>
+
+      <!-- ===== Exports (no Data Viewer needed) ===== -->
+      <div class="mt-lg">
+        <h2>Quick Export</h2>
+        <div class="row mt">
+          <button class="btn btn-outline" id="exportUsersJson">Download users.json</button>
+          <button class="btn btn-outline" id="exportUsersCsv">Download users.csv</button>
+          <button class="btn btn-outline" id="exportPatientsJson">Download patients.json</button>
+          <button class="btn btn-outline" id="exportPatientsCsv">Download patients.csv</button>
+        </div>
+      </div>
+      <!-- ========================================== -->
     </div>
   </div>
+
   <script>
+    // Require login
     const session = JSON.parse(localStorage.getItem('session') || 'null');
     if (!session) {
       location.href = 'login.html?msg=' + encodeURIComponent('Please login to register a patient.');
     }
 
-    // calendar button logic with graceful fallback
+    // Logout
+    document.getElementById('logoutBtn').onclick = () => {
+      localStorage.removeItem('session');
+      location.href = 'index.html?msg=' + encodeURIComponent('Logged out.');
+    };
+
+    // Calendar button behavior
     const dob = document.getElementById('pdob');
-    const calBtn = document.getElementById('openCal');
-    calBtn.addEventListener('click', () => {
-      if (dob.showPicker) { dob.showPicker(); } else { dob.focus(); }
+    document.getElementById('openCal').addEventListener('click', () => {
+      if (dob.showPicker) dob.showPicker(); else dob.focus();
     });
 
-    const form = document.getElementById('patientForm');
-    form.addEventListener('submit', (e) => {
+    // Submit patient
+    document.getElementById('patientForm').addEventListener('submit', (e) => {
       e.preventDefault();
       const name = document.getElementById('pname').value.trim();
       const email = document.getElementById('pemail').value.trim().toLowerCase();
       const pdob = dob.value.trim();
+
       const pnameHelp = document.getElementById('pnameHelp');
       const pemailHelp = document.getElementById('pemailHelp');
       const pdobHelp = document.getElementById('pdobHelp');
-      pnameHelp.textContent = pemailHelp.textContent = ''; pdobHelp.textContent = 'Format: YYYY-MM-DD (or pick from calendar)';
+      pnameHelp.textContent = pemailHelp.textContent = '';
+      pdobHelp.textContent = 'Format: YYYY-MM-DD (or pick from calendar)';
 
       let ok = true;
       if (name.length < 2) { pnameHelp.textContent = 'Enter patient name'; ok = false; }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { pemailHelp.textContent = 'Enter a valid email'; ok = false; }
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(pdob)) { pdobHelp.textContent = 'Enter a valid date as YYYY-MM-DD or use the calendar'; ok = false; }
+      if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) { pemailHelp.textContent = 'Enter a valid email'; ok = false; }
+      if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(pdob)) { pdobHelp.textContent = 'Enter a valid date as YYYY-MM-DD or use the calendar'; ok = false; }
       if (!ok) return;
 
       const patients = JSON.parse(localStorage.getItem('patients') || '[]');
       patients.push({ name, email, dob: pdob, createdAt: new Date().toISOString(), by: session.email });
       localStorage.setItem('patients', JSON.stringify(patients));
 
-      const done = document.getElementById('done');
-      done.classList.remove('hidden');
-      setTimeout(() => { location.href = 'index.html?msg=' + encodeURIComponent('Patient registered.'); }, 900);
+      document.getElementById('done').classList.remove('hidden');
+      setTimeout(() => {
+        location.href = 'index.html?msg=' + encodeURIComponent('Patient registered.');
+      }, 900);
     });
+
+    // ===== Export helpers =====
+    function download(filename, text, type = 'application/json') {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([text], { type }));
+      a.download = filename; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    }
+    function toCSV(rows, headers) {
+      const esc = v => `"${String(v ?? '').replace(/"/g,'""')}"`;
+      return [headers.map(h => esc(h)).join(',')]
+             .concat(rows.map(r => headers.map(h => esc(r[h])).join(',')))
+             .join('\\n');
+    }
+
+    // Buttons
+    document.getElementById('exportUsersJson').onclick = () =>
+      download('users.json', localStorage.getItem('users') || '[]');
+
+    document.getElementById('exportUsersCsv').onclick = () => {
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      download('users.csv', toCSV(users, ['name','email','createdAt']), 'text/csv');
+    };
+
+    document.getElementById('exportPatientsJson').onclick = () =>
+      download('patients.json', localStorage.getItem('patients') || '[]');
+
+    document.getElementById('exportPatientsCsv').onclick = () => {
+      const pts = JSON.parse(localStorage.getItem('patients') || '[]');
+      download('patients.csv', toCSV(pts, ['name','email','dob','by','createdAt']), 'text/csv');
+    };
+    // ==========================
   </script>
 </body>
 </html>
+
