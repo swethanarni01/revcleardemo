@@ -1,8 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Patient Registration</title>
   <link rel="stylesheet" href="styles.css"/>
   <meta name="robots" content="noindex,nofollow">
@@ -19,13 +18,11 @@
           <input id="pname" placeholder="John Smith" required minlength="2"/>
           <div class="help" id="pnameHelp"></div>
         </div>
-
         <div class="field">
           <label>Email</label>
           <input id="pemail" type="email" placeholder="john@example.com" required/>
           <div class="help" id="pemailHelp"></div>
         </div>
-
         <div class="field">
           <label>Date of Birth</label>
           <div class="date-wrap">
@@ -37,41 +34,26 @@
 
         <div class="row mt">
           <button class="btn" type="submit">Submit</button>
-          <a class="btn btn-outline" href="index.html">Back</a>
           <button type="button" class="btn btn-danger" id="logoutBtn">Logout</button>
         </div>
       </form>
 
       <div class="mt success hidden" id="done">Patient registered.</div>
-
-      <!-- ===== Exports (no Data Viewer needed) ===== -->
-      <div class="mt-lg">
-        <h2>Quick Export</h2>
-        <div class="row mt">
-          <button class="btn btn-outline" id="exportUsersJson">Download users.json</button>
-          <button class="btn btn-outline" id="exportUsersCsv">Download users.csv</button>
-          <button class="btn btn-outline" id="exportPatientsJson">Download patients.json</button>
-          <button class="btn btn-outline" id="exportPatientsCsv">Download patients.csv</button>
-        </div>
-      </div>
-      <!-- ========================================== -->
     </div>
   </div>
 
   <script>
     // Require login
     const session = JSON.parse(localStorage.getItem('session') || 'null');
-    if (!session) {
-      location.href = 'login.html?msg=' + encodeURIComponent('Please login to register a patient.');
-    }
+    if (!session) { location.replace('login.html'); }
 
     // Logout
     document.getElementById('logoutBtn').onclick = () => {
       localStorage.removeItem('session');
-      location.href = 'index.html?msg=' + encodeURIComponent('Logged out.');
+      location.replace('login.html');
     };
 
-    // Calendar button behavior
+    // Calendar button
     const dob = document.getElementById('pdob');
     document.getElementById('openCal').addEventListener('click', () => {
       if (dob.showPicker) dob.showPicker(); else dob.focus();
@@ -101,43 +83,10 @@
       localStorage.setItem('patients', JSON.stringify(patients));
 
       document.getElementById('done').classList.remove('hidden');
-      setTimeout(() => {
-        location.href = 'index.html?msg=' + encodeURIComponent('Patient registered.');
-      }, 900);
+      setTimeout(() => { location.replace('index.html'); }, 900);
     });
-
-    // ===== Export helpers =====
-    function download(filename, text, type = 'application/json') {
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(new Blob([text], { type }));
-      a.download = filename; a.click();
-      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-    }
-    function toCSV(rows, headers) {
-      const esc = v => `"${String(v ?? '').replace(/"/g,'""')}"`;
-      return [headers.map(h => esc(h)).join(',')]
-             .concat(rows.map(r => headers.map(h => esc(r[h])).join(',')))
-             .join('\\n');
-    }
-
-    // Buttons
-    document.getElementById('exportUsersJson').onclick = () =>
-      download('users.json', localStorage.getItem('users') || '[]');
-
-    document.getElementById('exportUsersCsv').onclick = () => {
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-      download('users.csv', toCSV(users, ['name','email','createdAt']), 'text/csv');
-    };
-
-    document.getElementById('exportPatientsJson').onclick = () =>
-      download('patients.json', localStorage.getItem('patients') || '[]');
-
-    document.getElementById('exportPatientsCsv').onclick = () => {
-      const pts = JSON.parse(localStorage.getItem('patients') || '[]');
-      download('patients.csv', toCSV(pts, ['name','email','dob','by','createdAt']), 'text/csv');
-    };
-    // ==========================
   </script>
 </body>
 </html>
+
 
